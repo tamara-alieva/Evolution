@@ -1,4 +1,4 @@
-use std::process::Output;
+use std::{intrinsics::nearbyintf32, process::Output};
 
 #[derive(Debug)]
 pub struct Network;
@@ -16,6 +16,7 @@ impl Network {  // Нейронная сеть
             .windows(2)
             .map(|layers| Layer::random(layers[0].neurons, layers[1].neurons))
             .collect();
+
         Self { layers }
     }
 
@@ -32,6 +33,14 @@ struct Layer {  // Слой сети
 }
 
 impl Layer {
+    fn random(input_size: usize, output_size: usize) -> Self {
+        let neurons = (0..output_size)
+            .map(|_| Neuron::random(input_size))
+            .collect();
+
+        Self { neurons }
+    }
+
     fn propagate(&self, inputs: Vec<f32>) -> Vec<f32> {
         self.neurons
             .iter()
@@ -47,6 +56,16 @@ struct Neuron {         // Нейрон
 }
 
 impl Neuron {
+    fn random(input_size: usize) -> Self {
+        let bias = todo!();
+
+        let weights = (0..input_size)
+            .map(|_| todo!())
+            .collect();
+
+        Self { bias, weights }
+    }
+
     fn propagate(&self, inputs: &[f32]) -> f32 {
         assert_eq!(inputs.len(), self.weights.len());
 
