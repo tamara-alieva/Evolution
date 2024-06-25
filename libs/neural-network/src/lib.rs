@@ -3,7 +3,22 @@ use std::process::Output;
 #[derive(Debug)]
 pub struct Network;
 
+#[derive(Debug)]
+pub struct LayerTopology {
+    pub neurons: usize,
+}
+
 impl Network {  // Нейронная сеть
+    pub fn random(layers: &[LayerTopology]) -> Self {
+        assert!(layers.len() > 1);
+
+        let layers = layers
+            .windows(2)
+            .map(|layers| Layer::random(layers[0].neurons, layers[1].neurons))
+            .collect();
+        Self { layers }
+    }
+
     pub fn propagate(&self, mut inputs: Vec<f32>) -> Vec<f32> {
         self.layers
             .iter()
