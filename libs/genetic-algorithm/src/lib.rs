@@ -1,5 +1,7 @@
-use rand::seq::SliceRandom;
+use rand::seq::{IteratorRandom, SliceRandom};
 use rand::{Rng, RngCore};
+use std::ops::Index;
+use std::iter::FromIterator;
 
 pub struct GeneticAlgorithm<S> { // Генетический алгоритм
     selection_method: S,
@@ -7,6 +9,7 @@ pub struct GeneticAlgorithm<S> { // Генетический алгоритм
 
 pub trait Individual { // Индивид
     fn fitness(&self) -> f32;
+    fn chromosome(&self) -> &Chromosome;
 }
 
 impl<S> GeneticAlgorithm<S> 
@@ -25,8 +28,8 @@ where
 
         (0..population.len())
             .map(|_| {
-                let parent_a = self.selection_method.select(rng, population);
-                let parent_b = self.selection_method.select(rng, population);
+                let parent_a = self.selection_method.select(rng, population).chromosome();
+                let parent_b = self.selection_method.select(rng, population).chromosome();
 
                 // скрещивание
                 // мутация
@@ -53,6 +56,93 @@ impl SelectionMethod for RouletteWheelSelection {
         population
             .choose_weighted(rng, |individual| individual.fitness())
             .expect("got an empty population")
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct Chromosome { // Хромосома
+    genes: Vec<f32>
+}
+
+impl Chromosome {
+    pub fn len(&self) -> usize {
+        self.genes.len()
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item = &f32> {
+        self.genes.iter()
+    }
+
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut f32> {
+        self.genes.iter_mut()
+    }
+}
+
+impl Index<usize> for Chromosome {
+    type Output = f32;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.genes[index]
+    }
+}
+
+impl FromIterator<f32> for Chromosome {
+    fn from_iter<T: IntoIterator<Item = f32>>(iter: T) -> Self {
+        Self {
+            genes: iter.into_iter().collect(),
+        }
+    }
+}
+
+impl IntoIterator for Chromosome {
+    type Item = f32;
+    type IntoIter = std::vec::IntoIter<f32>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.genes.into_iter()
+    }
+}
+
+pub trait CrossoverMethod { // Метод для скрещивания
+    fn crossover(
+        &self,
+        rng: &mut dyn RngCore,
+        parent_a: &Chromosome,
+        parent_b: &Chromosome,
+    ) -> Chromosome;
+}
+
+#[derive(Clone, Debug)]
+pub struct UniformCrossover;
+
+impl CrossoverMethod for UniformCrossover {
+    fn crossover(
+            &self,
+            rng: &mut dyn RngCore,
+            parent_a: &Chromosome,
+            parent_b: &Chromosome,
+    ) -> Chromosome {
+        assert_eq!(parent_a.len(), parent_b.len());
+
+        parent_a
+            .iter()
+            .zip(parent_b.iter())
+            .map(|(&a, &b)| if rng.gen_bool(0.5) { a } else { b })
+            .collect();
+
+        let mut child = Vec::new();
+        let gene_count = parent_a.len();
+
+        for gene_idx in 0..gene_count {
+            let gene = if rng.gen_bool(0.5) {
+                parent_a[gene_idx]
+            } else {
+                parent_b[gene_idx]
+            };
+
+            child.push(gene);
+        }
+        child.into_iter().collect()
     }
 }
 
@@ -112,6 +202,10 @@ mod tests {
     impl Individual for TestIndividual {
         fn fitness(&self) -> f32 {
             self.fitness
+        }
+
+        fn chromosome(&self) -> &Chromosome {
+            panic!("not supported for TestIndividual")
         }
     }
 
