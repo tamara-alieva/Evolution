@@ -77,14 +77,10 @@ impl Neuron {
     }
 
     fn random(rng: &mut dyn RngCore, input_size: usize) -> Self {
-        let mut rng = rand::thread_rng();
         let bias = rng.gen_range(-1.0..=1.0);
+        let weights = (0..input_size).map(|_| rng.gen_range(-1.0..=1.0)).collect();
 
-        let weights = (0..input_size)
-            .map(|_|rng.gen_range(-1.0..=1.0))
-            .collect();
-
-        Self { bias, weights }
+        Self::new(bias, weights)
     }
 
     fn propagate(&self, inputs: &[f32]) -> f32 {
@@ -117,10 +113,7 @@ mod tests {
         // Нейрон
         let neuron = Neuron::random(&mut rng, 4);
         assert_relative_eq!(neuron.bias, -0.6255188);
-        assert_relative_eq!(
-            neuron.weights.as_slice(),
-            &[0.67383957, 0.8181262, 0.26284897, 0.5238807].as_slice()
-        );
+        assert_relative_eq!(neuron.weights.as_slice(), &[0.67383957, 0.8181262, 0.26284897, 0.5238807].as_slice());
 
         //---------------------------------------------------------------------
 

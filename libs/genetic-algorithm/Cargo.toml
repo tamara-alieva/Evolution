@@ -7,4 +7,4 @@ edition = "2021"
 rand = "0.8"
 
 [dev-dependencies]
-rand-chacha = "0.3"
+rand_chacha = "0.3"
