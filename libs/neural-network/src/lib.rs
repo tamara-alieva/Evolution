@@ -1,11 +1,11 @@
 use rand::{Rng, RngCore};
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Network {
     layers: Vec<Layer>,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct LayerTopology { // Топология слоёв
     pub neurons: usize,
 }
@@ -33,7 +33,7 @@ impl Network {  // Нейронная сеть
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 struct Layer {  // Слой сети
     neurons: Vec<Neuron>,
 }
@@ -53,7 +53,7 @@ impl Layer {
             .map(|_| Neuron::random(rng, input_size))
             .collect();
 
-        Self { neurons }
+        Self::new(neurons)
     }
 
     fn propagate(&self, inputs: Vec<f32>) -> Vec<f32> {
@@ -64,7 +64,7 @@ impl Layer {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 struct Neuron {         // Нейрон
     bias: f32,          // Смещение
     weights: Vec<f32>   // Весы
@@ -104,7 +104,7 @@ impl Neuron {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use approx::assert_relative_eq;
+    use approx::{assert_relative_eq, assert_relative_ne};
     use rand::SeedableRng;
     use rand_chacha::ChaCha8Rng;
 
@@ -153,26 +153,28 @@ mod tests {
 
         //---------------------------------------------------------------------
 
+        // Слой
+        let layer = Layer::random(&mut rng, 3, 2);
+        let actual_biases: Vec<_> = layer.neurons.iter().map(|neuron| neuron.bias).collect();
+        let expected_biases = vec![-0.6255188, 0.5238807];
+        let actual_weights: Vec<_> = layer
+            .neurons
+            .iter()
+            .map(|neuron| neuron.weights.as_slice())
+            .collect();
+        let expected_weights: Vec<&[f32]> = vec![
+            &[0.67383957, 0.8181262, 0.26284897],
+            &[-0.53516835, 0.069369674, -0.7648182],
+        ];
+        assert_relative_eq!(actual_biases.as_slice(), expected_biases.as_slice());
+        assert_relative_eq!(actual_weights.as_slice(), expected_weights.as_slice());
+
     }
 
     #[test]
     fn propagate() {
         // Нейрон
-
-        let neuron = Neuron {
-            bias: 0.5,
-            weights: vec![-0.3, 0.8],
-        };
-        assert_relative_eq!(
-            neuron.propagate(&[-10.0, -10.0]),
-            0.0,
-        );
-        assert_relative_eq!(
-            neuron.propagate(&[0.5, 1.0]),
-            (-0.3 * 0.5) + (0.8 * 1.0) + 0.5,
-        );
-
-        /*#[test]
+        #[test]
         fn returns_propagated_input() { // распространяемое значение
             let actual = Neuron::new(0.1, vec![-0.3, 0.6, 0.9]).propagate(&[0.5, -0.6, 0.7]);
             let expected: f32 = 0.1 + (0.5 * -0.3) + (-0.6 * 0.6) + (0.7 * 0.9);
@@ -191,7 +193,7 @@ mod tests {
             assert_relative_eq!(v2, v3);
             assert_relative_ne!(v3, v4);
             assert_relative_ne!(v4, v5);
-        }*/
+        }
 
         //---------------------------------------------------------------------
 
@@ -203,9 +205,25 @@ mod tests {
             ]),
             Layer::new(vec![Neuron::new(0.0, vec![-0.5, 0.5])]),
         );
-        //let network = Network::new(vec![layers.0.clone(), layers.1.clone()]);
+        let network = Network::new(vec![layers.0.clone(), layers.1.clone()]);
         let actual = network.propagate(vec![0.5, 0.6, 0.7]);
         let expected = layers.1.propagate(layers.0.propagate(vec![0.5, 0.6, 0.7]));
+        assert_relative_eq!(actual.as_slice(), expected.as_slice());
+
+        //---------------------------------------------------------------------
+
+        // Слой
+        let neurons = (
+            Neuron::new(0.0, vec![0.1, 0.2, 0.3]),
+            Neuron::new(0.0, vec![0.4, 0.5, 0.6]),
+        );
+
+        let layer = Layer::new(vec![neurons.0.clone(), neurons.1.clone()]);
+        let inputs = &[-0.5, 0.0, 0.5];
+
+        let actual = layer.propagate(inputs.to_vec());
+        let expected = vec![neurons.0.propagate(inputs), neurons.1.propagate(inputs)];
+
         assert_relative_eq!(actual.as_slice(), expected.as_slice());
 
     }
