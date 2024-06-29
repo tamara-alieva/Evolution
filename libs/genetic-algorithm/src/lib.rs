@@ -1,14 +1,23 @@
 use rand::seq::SliceRandom;
 use rand::{Rng, RngCore};
 
-pub struct GeneticAlgorithm; // Генетический алгоритм
+pub struct GeneticAlgorithm<S> { // Генетический алгоритм
+    selection_method: S,
+}
 
 pub trait Individual { // Индивид
     fn fitness(&self) -> f32;
 }
 
-impl GeneticAlgorithm {
-    pub fn evolve<I>(&self, population: &[I]) -> Vec<I> 
+impl<S> GeneticAlgorithm<S> 
+where 
+    S: SelectionMethod,
+{   
+    pub fn new(selection_method: S) -> Self {
+        Self { selection_method }
+    }
+
+    pub fn evolve<I>(&self, rng: &mut dyn RngCore, population: &[I]) -> Vec<I> 
     where
         I: Individual 
     {
@@ -16,7 +25,9 @@ impl GeneticAlgorithm {
 
         (0..population.len())
             .map(|_| {
-                // селекция
+                let parent_a = self.selection_method.select(rng, population);
+                let parent_b = self.selection_method.select(rng, population);
+
                 // скрещивание
                 // мутация
                 todo!()
