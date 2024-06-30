@@ -218,27 +218,42 @@ mod tests {
     }
 
     #[derive(Clone, Debug)]
-    struct TestIndividual {
-        fitness: f32,
+    enum TestIndividual {
+        // для тестов, которым нужен доступ к хромосоме
+        WithChromosome { chromosome: Chromosome },
+        // для тестов, которым не нужен доступ к хромосоме
+        WithFitness { fitness: f32 },
     }
 
     impl TestIndividual {
         fn new(fitness: f32) -> Self {
-            Self { fitness }
+            Self::WithFitness { fitness }
         }
     }
 
     impl Individual for TestIndividual {
         fn create(chromosome: Chromosome) -> Self {
-            todo!();
+            Self::WithChromosome { chromosome }
         }
 
         fn fitness(&self) -> f32 {
-            self.fitness
+            match self {
+                Self::WithChromosome { chromosome } => {
+                    chromosome.iter().sum()
+                }
+
+                Self::WithFitness { fitness } => *fitness,
+            }
         }
 
         fn chromosome(&self) -> &Chromosome {
-            panic!("not supported for TestIndividual")
+            match self {
+                Self::WithChromosome { chromosome } => chromosome,
+
+                Self::WithFitness { .. } => {
+                    panic!("not supported for TestIndividual::WithFitness")
+                }
+            }
         }
     }
 
