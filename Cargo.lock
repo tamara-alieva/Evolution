@@ -70,6 +70,7 @@ dependencies = [
 name = "lib-simulation-wasm"
 version = "0.1.0"
 dependencies = [
+ "rand",
  "wasm-bindgen",
 ]
 
