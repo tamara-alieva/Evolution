@@ -61,6 +61,12 @@ impl Simulation {
     pub fn world(&self) -> &World {
         &self.world
     }
+
+    pub fn step(&mut self) {
+        for animal in &mut self.world.animals {
+            animal.position += animal.rotation * na::Vector2::new(0.0, animal.speed);
+        }
+    }
 }
 
 impl Animal {

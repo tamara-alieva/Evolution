@@ -47,8 +47,13 @@ impl Simulation {
 
         Self { rng, sim }
     }
+
     pub fn world(&self) -> World {
         World::from(self.sim.world())
+    }
+
+    pub fn step(&mut self) {
+        self.sim.step();
     }
 }
 
