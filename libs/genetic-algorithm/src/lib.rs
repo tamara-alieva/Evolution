@@ -139,6 +139,37 @@ impl CrossoverMethod for UniformCrossover {
     }
 }
 
+pub trait MutationMethod {
+    fn mutate(&self, rng: &mut dyn RngCore, child: &mut Chromosome);
+}
+
+#[derive(Clone, Debug)]
+pub struct GaussianMutation { // Мутация Гаусса
+    chance: f32, // вероятность изменения набора генов: 0.0 -> нет изменений, 1.0 -> изменены все гены
+    coeff: f32, // магнитуда изменения: 0.0 -> нет изменений, 
+                // 3.0 -> выбранные гены будут увеличены или уменьшены, как минимум, на 3.0
+}
+
+impl GaussianMutation {
+    pub fn new(chance: f32, coeff: f32) -> Self {
+        assert!(chance >= 0.0 && chance <= 1.0); // проверка на диапазон значений вероятности
+
+        Self { chance, coeff }
+    }
+}
+
+impl MutationMethod for GaussianMutation {
+    fn mutate(&self, rng: &mut dyn RngCore, child: &mut Chromosome) {
+        for gene in child.iter_mut() {
+            let sign = if rng.gen_bool(0.5) { -1.0 } else { 1.0 };
+
+            if rng.gen_bool(self.chance as f64) {
+                *gene += sign * self.coeff * rng.gen::<f32>();
+            }
+        }
+    }
+}
+
 // Тесты
 #[cfg(test)]
 mod tests {
@@ -216,6 +247,71 @@ mod tests {
 
         assert_eq!(diff_a, 49); // Это число должно отл
         assert_eq!(diff_b, 51);
+    }
+
+    mod gaussian_mutation { // тест алгоритма мутации Гаусса
+
+        use std::{hash::DefaultHasher, process::Child};
+
+        use super::*;
+        fn actual(chance: f32, coeff: f32) -> Vec<f32> {
+            let mut rng = ChaCha8Rng::from_seed(Default::default());
+            let mut child = vec![1.0, 2.0, 3.0, 4.0, 5.0].into_iter().collect();
+
+            GaussianMutation::new(chance, coeff).mutate(&mut rng, &mut child);
+
+            child.into_iter().collect()
+        }
+
+        mod given_zero_chance {
+
+            mod and_zero_coefficient {
+                #[test]
+                fn does_not_change_the_original_chromosome() {
+                    todo!();
+                }
+            }
+
+            mod and_nonzero_coefficient {
+                #[test]
+                fn does_not_change_the_original_chromosome() {
+                    todo!();
+                }
+            }
+
+        }
+
+        mod given_fifty_fifty_chance {
+
+            mod and_zero_coefficient {
+                #[test]
+                fn does_not_change_the_original_chromosome() {
+                    todo!();
+                }
+            }
+
+            mod and_nonzero_coefficient {
+                #[test]
+                fn slightly_changes_the_original_chromosome() {
+                    todo!();
+                }
+            }
+        }
+
+        mod given_max_chance {
+            mod and_zero_coefficient {
+                #[test]
+                fn does_not_change_the_original_chromosome() {
+                    todo!();
+                }
+            }
+            mod and_nonzero_coefficient {
+                #[test]
+                fn entirely_changes_the_original_chromosome() {
+                    todo!();
+                }
+            }
+        }
     }
 
 }
