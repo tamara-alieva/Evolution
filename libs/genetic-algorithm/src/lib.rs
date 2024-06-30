@@ -39,14 +39,15 @@ where
 
         (0..population.len())
             .map(|_| {
-                let parent_a = self.selection_method.select(rng, population).chromosome();
-                let parent_b = self.selection_method.select(rng, population).chromosome();
+                let parent_a = self.selection_method.select(rng, population).chromosome(); // родитель 1
+                let parent_b = self.selection_method.select(rng, population).chromosome(); // родитель 2
+                let mut child = self.crossover_method.crossover(rng, parent_a, parent_b); // скрестить гены родителей
 
-                let mut child = self.crossover_method.crossover(rng, parent_a, parent_b);
+                self.mutation_method.mutate(rng, &mut child); // мутация
 
-                self.mutation_method.mutate(rng, &mut child);
+                I::create(child) // создать новый индивид (потомок)
             })
-            .collect();
+            .collect()
     }
 }
 
