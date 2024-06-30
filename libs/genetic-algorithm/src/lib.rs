@@ -6,9 +6,11 @@ use std::iter::FromIterator;
 pub struct GeneticAlgorithm<S> { // Генетический алгоритм
     selection_method: S,
     crossover_method: Box<dyn CrossoverMethod>,
+    mutation_method: Box<dyn MutationMethod>,
 }
 
 pub trait Individual { // Индивид
+    fn create(chromosome: Chromosome) -> Self;
     fn fitness(&self) -> f32;
     fn chromosome(&self) -> &Chromosome;
 }
@@ -20,10 +22,12 @@ where
     pub fn new(
         selection_method: S,
         crossover_method: impl CrossoverMethod + 'static,
+        mutation_method: impl MutationMethod + 'static,
     ) -> Self {
         Self { 
             selection_method,
             crossover_method: Box::new(crossover_method),
+            mutation_method: Box::new(mutation_method),
         }
     }
 
@@ -37,12 +41,12 @@ where
             .map(|_| {
                 let parent_a = self.selection_method.select(rng, population).chromosome();
                 let parent_b = self.selection_method.select(rng, population).chromosome();
+
                 let mut child = self.crossover_method.crossover(rng, parent_a, parent_b);
 
-                // мутация
-                todo!()
+                self.mutation_method.mutate(rng, &mut child);
             })
-            .collect()
+            .collect();
     }
 }
 
@@ -224,6 +228,10 @@ mod tests {
     }
 
     impl Individual for TestIndividual {
+        fn create(chromosome: Chromosome) -> Self {
+            todo!();
+        }
+
         fn fitness(&self) -> f32 {
             self.fitness
         }
@@ -264,54 +272,94 @@ mod tests {
         }
 
         mod given_zero_chance {
+            use approx::assert_relative_eq;
+
+            fn actual(coeff: f32) -> Vec<f32> {
+                super::actual(0.0, coeff)
+            }
 
             mod and_zero_coefficient {
+                use super::*;
+
                 #[test]
                 fn does_not_change_the_original_chromosome() {
-                    todo!();
+                    let actual = actual(0.0);
+                    let expected = vec![1.0, 2.0, 3.0, 4.0, 5.0];
+                    approx::assert_relative_eq!(actual.as_slice(), expected.as_slice());
                 }
             }
 
             mod and_nonzero_coefficient {
+                use super::*;
+
                 #[test]
                 fn does_not_change_the_original_chromosome() {
-                    todo!();
+                    let actual = actual(0.5);
+                    let expected = vec![1.0, 2.0, 3.0, 4.0, 5.0];
+                    approx::assert_relative_eq!(actual.as_slice(), expected.as_slice());
                 }
             }
-
         }
 
         mod given_fifty_fifty_chance {
+            fn actual(coeff: f32) -> Vec<f32> {
+                super::actual(0.5, coeff)
+            }
 
             mod and_zero_coefficient {
+                use std::process::ExitCode;
+
+                use super::*;
+
                 #[test]
                 fn does_not_change_the_original_chromosome() {
-                    todo!();
+                    let actual = actual(0.0);
+                    let expected = vec![1.0, 2.0, 3.0, 4.0, 5.0];
+
+                    approx::assert_relative_eq!(actual.as_slice(), expected.as_slice());
                 }
             }
 
             mod and_nonzero_coefficient {
+                use super::*;
+
                 #[test]
                 fn slightly_changes_the_original_chromosome() {
-                    todo!();
+                    let actual = actual(0.5);
+                    let expected = vec![1.0, 1.7756249, 3.0, 4.1596804, 5.0];
+
+                    approx::assert_relative_eq!(actual.as_slice(), expected.as_slice());
                 }
             }
         }
 
         mod given_max_chance {
+            fn actual(coeff: f32) -> Vec<f32> {
+                super::actual(1.0, coeff)
+            }
+
             mod and_zero_coefficient {
+                use super::*;
+
                 #[test]
                 fn does_not_change_the_original_chromosome() {
-                    todo!();
+                    let actual = actual(0.0);
+                    let expected = vec![1.0, 2.0, 3.0, 4.0, 5.0];
+
+                    approx::assert_relative_eq!(actual.as_slice(), expected.as_slice());
                 }
             }
             mod and_nonzero_coefficient {
+                use super::*;
+
                 #[test]
                 fn entirely_changes_the_original_chromosome() {
-                    todo!();
+                    let actual = actual(0.5);
+                    let expected = vec![1.4545316, 2.1162078, 2.7756248, 3.9505124, 4.638691];
+
+                    approx::assert_relative_eq!(actual.as_slice(), expected.as_slice());
                 }
             }
         }
     }
-
 }
