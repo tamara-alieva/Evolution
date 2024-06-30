@@ -217,8 +217,8 @@ mod tests {
 
     }
 
-    #[derive(Clone, Debug)]
-    enum TestIndividual {
+    #[derive(Clone, Debug, PartialEq)]
+    pub enum TestIndividual {
         // для тестов, которым нужен доступ к хромосоме
         WithChromosome { chromosome: Chromosome },
         // для тестов, которым не нужен доступ к хромосоме
@@ -254,6 +254,12 @@ mod tests {
                     panic!("not supported for TestIndividual::WithFitness")
                 }
             }
+        }
+    }
+
+    impl PartialEq for Chromosome {
+        fn eq(&self, other: &Self) -> bool {
+            approx::relative_eq!(self.genes.as_slice(), other.genes.as_slice())
         }
     }
 
@@ -378,4 +384,40 @@ mod tests {
             }
         }
     }
+
+    #[test]
+    fn genetic_algorithm() { // тест генетического алгоритма
+        fn individual(genes: &[f32]) -> TestIndividual {
+            TestIndividual::create(genes.iter().cloned().collect())
+        }
+
+        let mut rng = ChaCha8Rng::from_seed(Default::default());
+
+        let ga = GeneticAlgorithm::new(
+            RouletteWheelSelection,
+            UniformCrossover,
+            GaussianMutation::new(0.5, 0.5),
+        );
+
+        let mut population = vec![
+            individual(&[0.0, 0.0, 0.0]),
+            individual(&[1.0, 1.0, 1.0]),
+            individual(&[1.0, 2.0, 1.0]),
+            individual(&[1.0, 2.0, 4.0]),
+        ];
+
+        for _ in 0..10 {
+            population = ga.evolve(&mut rng, &population);
+        }
+
+        let expected_population = vec![
+            individual(&[0.44769490, 2.0648358, 4.3058133]),
+            individual(&[1.21268670, 1.5538777, 2.8869110]),
+            individual(&[1.06176780, 2.2657390, 4.4287640]),
+            individual(&[0.95909685, 2.4618788, 4.0247330]),
+        ];
+
+        assert_eq!(population, expected_population);
+    }
+
 }
