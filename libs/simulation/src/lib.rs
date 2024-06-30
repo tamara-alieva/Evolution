@@ -51,3 +51,20 @@ impl World {
     }
 }
 
+impl Animal {
+    pub fn random(rng: &mut dyn RngCore) -> Self {
+        Self {
+            position: rng.gen(),
+            rotation: rng.gen(),
+            speed: 0.002,
+        }
+    }
+}
+
+impl Food {
+    pub fn random(rng: &mut dyn RngCore) -> Self {
+        Self {
+            position: rng.gen(),
+        }
+    }
+}
