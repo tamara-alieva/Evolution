@@ -5,6 +5,7 @@ use std::iter::FromIterator;
 
 pub struct GeneticAlgorithm<S> { // Генетический алгоритм
     selection_method: S,
+    crossover_method: Box<dyn CrossoverMethod>,
 }
 
 pub trait Individual { // Индивид
@@ -16,8 +17,14 @@ impl<S> GeneticAlgorithm<S>
 where 
     S: SelectionMethod,
 {   
-    pub fn new(selection_method: S) -> Self {
-        Self { selection_method }
+    pub fn new(
+        selection_method: S,
+        crossover_method: impl CrossoverMethod + 'static,
+    ) -> Self {
+        Self { 
+            selection_method,
+            crossover_method: Box::new(crossover_method),
+        }
     }
 
     pub fn evolve<I>(&self, rng: &mut dyn RngCore, population: &[I]) -> Vec<I> 
@@ -30,8 +37,8 @@ where
             .map(|_| {
                 let parent_a = self.selection_method.select(rng, population).chromosome();
                 let parent_b = self.selection_method.select(rng, population).chromosome();
+                let mut child = self.crossover_method.crossover(rng, parent_a, parent_b);
 
-                // скрещивание
                 // мутация
                 todo!()
             })
@@ -117,10 +124,10 @@ pub struct UniformCrossover;
 
 impl CrossoverMethod for UniformCrossover {
     fn crossover(
-            &self,
-            rng: &mut dyn RngCore,
-            parent_a: &Chromosome,
-            parent_b: &Chromosome,
+        &self,
+        rng: &mut dyn RngCore,
+        parent_a: &Chromosome,
+        parent_b: &Chromosome,
     ) -> Chromosome {
         assert_eq!(parent_a.len(), parent_b.len());
 
@@ -128,21 +135,7 @@ impl CrossoverMethod for UniformCrossover {
             .iter()
             .zip(parent_b.iter())
             .map(|(&a, &b)| if rng.gen_bool(0.5) { a } else { b })
-            .collect();
-
-        let mut child = Vec::new();
-        let gene_count = parent_a.len();
-
-        for gene_idx in 0..gene_count {
-            let gene = if rng.gen_bool(0.5) {
-                parent_a[gene_idx]
-            } else {
-                parent_b[gene_idx]
-            };
-
-            child.push(gene);
-        }
-        child.into_iter().collect()
+            .collect()
     }
 }
 
@@ -156,7 +149,7 @@ mod tests {
     use std::iter::FromIterator;
 
     #[test]
-    fn roulette_wheel_selection() {
+    fn roulette_wheel_selection() { // выбор по колесу-рулетке
         let mut rng = ChaCha8Rng::from_seed(Default::default());
         let population = vec![
             TestIndividual::new(2.0),
@@ -207,6 +200,22 @@ mod tests {
         fn chromosome(&self) -> &Chromosome {
             panic!("not supported for TestIndividual")
         }
+    }
+
+    #[test]
+    fn uniform_crossover() {
+        let mut rng = ChaCha8Rng::from_seed(Default::default());
+        let parent_a: Chromosome = (1..=100).map(|n| n as f32).collect();
+        let parent_b: Chromosome = (1..=100).map(|n| -n as f32).collect();
+
+        let child = UniformCrossover.crossover(&mut rng, &parent_a, &parent_b);
+
+        // Число генов потомка, отличающихся от генов родителя
+        let diff_a = child.iter().zip(parent_a).filter(|(c, p)| *c != p).count();
+        let diff_b = child.iter().zip(parent_b).filter(|(c, p)| *c != p).count();
+
+        assert_eq!(diff_a, 49); // Это число должно отл
+        assert_eq!(diff_b, 51);
     }
 
 }
