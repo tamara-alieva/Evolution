@@ -29,6 +29,22 @@ impl Simulation {
     }
 
     pub fn step(&mut self) {
+        self.sim.step(&mut self.rng);
+    }
+
+    fn process_collisions(&mut self) {
+        for animal in &mut self.world.animals {
+            for food in &mut self.world.foods {
+                let distance = na::distance(&animal.position, &food.position);
+
+                if distance <= 0.01 {
+                    food.position = rng.gen();
+                }
+            }
+        }
+    }
+
+    fn process_movements(&mut self) {
         for animal in &mut self.world.animals {
             animal.position += animal.rotation * na::Vector2::new(0.0, animal.speed);
 
