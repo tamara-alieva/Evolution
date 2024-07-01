@@ -126,12 +126,13 @@ mod tests {
         }
     }
 
-    #[test_case(1.0, "      +      ")] // Food is inside the FOV
-    #[test_case(0.9, "      +      ")] // ditto
-    #[test_case(0.8, "      +      ")] // ditto
-    #[test_case(0.7, "      .      ")] // Food slowly disappears
-    #[test_case(0.6, "      .      ")] // ditto
-    #[test_case(0.5, "             ")] // Food disappeared!
+    // тестирования удаления пищи от птицы на расстояние
+    #[test_case(1.0, "      +      ")] // пища в поле зрения
+    #[test_case(0.9, "      +      ")]
+    #[test_case(0.8, "      +      ")]
+    #[test_case(0.7, "      .      ")] 
+    #[test_case(0.6, "      .      ")]
+    #[test_case(0.5, "             ")] // пища исчезает из поля зрения
     #[test_case(0.4, "             ")]
     #[test_case(0.3, "             ")]
     #[test_case(0.2, "             ")]
@@ -147,4 +148,94 @@ mod tests {
             expected_vision,
         }.run()
     }
+
+    // тестирование вращения
+    #[test_case(0.00 * PI, "         +   ")] // пища правее
+    #[test_case(0.25 * PI, "        +    ")]
+    #[test_case(0.50 * PI, "      +      ")] // пища перед птицей
+    #[test_case(0.75 * PI, "    +        ")]
+    #[test_case(1.00 * PI, "   +         ")] // пища левее
+    #[test_case(1.25 * PI, " +           ")]
+    #[test_case(1.50 * PI, "            +")] // пища позади птицы (птица видит её, т.к. fov_angle = 360 гр.)
+    #[test_case(1.75 * PI, "           + ")]
+    #[test_case(2.00 * PI, "         +   ")]
+    #[test_case(2.25 * PI, "        +    ")]
+    #[test_case(2.50 * PI, "      +      ")]
+    fn rotations(rot: f32, expected_vision: &'static str) {
+        TestCase {
+            foods: vec![food(0.0, 0.5)],
+            fov_range: 1.0,
+            fov_angle: 2.0 * PI,
+            x: 0.5,
+            y: 0.5,
+            rot,
+            expected_vision,
+        }.run()
+    }
+
+    // тестирование позиции
+    // по оси X
+    #[test_case(0.9, 0.5, "#           #")]
+    #[test_case(0.8, 0.5, "  #       #  ")]
+    #[test_case(0.7, 0.5, "   +     +   ")]
+    #[test_case(0.6, 0.5, "    +   +    ")]
+    #[test_case(0.5, 0.5, "    +   +    ")]
+    #[test_case(0.4, 0.5, "     + +     ")]
+    #[test_case(0.3, 0.5, "     . .     ")]
+    #[test_case(0.2, 0.5, "     . .     ")]
+    #[test_case(0.1, 0.5, "     . .     ")]
+    #[test_case(0.0, 0.5, "             ")]
+    // по оси Y
+    #[test_case(0.5, 0.0, "            +")]
+    #[test_case(0.5, 0.1, "          + .")]
+    #[test_case(0.5, 0.2, "         +  +")]
+    #[test_case(0.5, 0.3, "        + +  ")]
+    #[test_case(0.5, 0.4, "      +  +   ")]
+    #[test_case(0.5, 0.6, "   +  +      ")]
+    #[test_case(0.5, 0.7, "  + +        ")]
+    #[test_case(0.5, 0.8, "+  +         ")]
+    #[test_case(0.5, 0.9, ". +          ")]
+    #[test_case(0.5, 1.0, "+            ")]
+    fn positions(x: f32, y: f32, expected_vision: &'static str) {
+        TestCase {
+            foods: vec![food(1.0, 0.4), food(1.0, 0.6)],
+            fov_range: 1.0,
+            fov_angle: FRAC_PI_2,
+            rot: 3.0 * FRAC_PI_2,
+            x,
+            y,
+            expected_vision,
+        }.run()
+    }
+
+    // тестирование угла обзора
+    #[test_case(0.25 * PI, " +         + ")]
+    #[test_case(0.50 * PI, ".  +     +  .")]
+    #[test_case(0.75 * PI, "  . +   + .  ")]
+    #[test_case(1.00 * PI, "   . + + .   ")]
+    #[test_case(1.25 * PI, "   . + + .   ")]
+    #[test_case(1.50 * PI, ".   .+ +.   .")]
+    #[test_case(1.75 * PI, ".   .+ +.   .")]
+    #[test_case(2.00 * PI, "+.  .+ +.  .+")]
+    fn fov_angles(fov_angle: f32, expected_vision: &'static str) {
+        TestCase {
+            foods: vec![
+                food(0.0, 0.0),
+                food(0.0, 0.33),
+                food(0.0, 0.66),
+                food(0.0, 1.0),
+                food(1.0, 0.0),
+                food(1.0, 0.33),
+                food(1.0, 0.66),
+                food(1.0, 1.0),
+            ],
+            fov_range: 1.0,
+            x: 0.5,
+            y: 0.5,
+            rot: 3.0 * FRAC_PI_2,
+            fov_angle,
+            expected_vision,
+        }.run()
+    }
+
 }
