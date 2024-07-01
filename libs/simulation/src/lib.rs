@@ -1,8 +1,9 @@
 mod animal;
+mod eye;
 mod food;
 mod world;
 
-pub use self::{animal::*, food::*, world::*};
+pub use self::{animal::*, eye::*, food::*, world::*};
 
 use nalgebra as na;
 use rand::{Rng, RngCore};
@@ -28,15 +29,16 @@ impl Simulation {
         &self.world
     }
 
-    pub fn step(&mut self) {
-        self.sim.step(&mut self.rng);
+    pub fn step(&mut self, rng: &mut dyn RngCore) {
+        self.process_collisions(rng);
+        self.process_movements();
     }
 
-    fn process_collisions(&mut self) {
+    fn process_collisions(&mut self, rng: &mut dyn RngCore) {
         for animal in &mut self.world.animals {
             for food in &mut self.world.foods {
                 let distance = na::distance(&animal.position, &food.position);
-
+    
                 if distance <= 0.01 {
                     food.position = rng.gen();
                 }
