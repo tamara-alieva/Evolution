@@ -25,7 +25,7 @@ impl Eye {
         self.cells
     }
 
-    fn process_vision(
+    pub(crate) fn process_vision(
         &self,
         position: na::Point2<f32>,
         rotation: na::Rotation2<f32>,
