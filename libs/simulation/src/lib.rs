@@ -6,7 +6,7 @@ mod world;
 mod brain;
 
 pub use self::{animal::*, brain::*, eye::*, food::*, world::*};
-use std::f32::consts::FRAC_PI_2;
+use std::f32::consts::*;
 const SPEED_MIN: f32 = 0.001;
 const SPEED_MAX: f32 = 0.005;
 const SPEED_ACCEL: f32 = 0.2;
@@ -48,7 +48,7 @@ impl Simulation {
         &self.world
     }
 
-    pub fn step(&mut self, rng: &mut dyn RngCore) {
+    pub fn step(&mut self, rng: &mut dyn RngCore) -> bool {
         self.process_collisions(rng);
         self.process_brains();
         self.process_movements();
@@ -57,6 +57,17 @@ impl Simulation {
 
         if self.age > GENERATION_LENGTH {
             self.evolve(rng);
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn train(&mut self, rng: &mut dyn RngCore) { // "ускорить" симуляцию до конца данного поколения
+        loop {
+            if self.step(rng) {
+                return;
+            }
         }
     }
 

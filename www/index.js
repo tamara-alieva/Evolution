@@ -1,6 +1,11 @@
 import * as sim from "lib-simulation-wasm";
 
 const simulation = new sim.Simulation();
+
+document.getElementById('train').onclick = function() {
+    simulation.train();
+}
+
 const viewport = document.getElementById('viewport');
 const viewportWidth = viewport.width;
 const viewportHeight = viewport.height;
