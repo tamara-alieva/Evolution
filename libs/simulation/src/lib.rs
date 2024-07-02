@@ -48,7 +48,7 @@ impl Simulation {
         &self.world
     }
 
-    pub fn step(&mut self, rng: &mut dyn RngCore) -> bool {
+    pub fn step(&mut self, rng: &mut dyn RngCore) -> Option<ga::Statistics> {
         self.process_collisions(rng);
         self.process_brains();
         self.process_movements();
@@ -56,17 +56,16 @@ impl Simulation {
         self.age += 1;
 
         if self.age > GENERATION_LENGTH {
-            self.evolve(rng);
-            true
+            Some(self.evolve(rng))
         } else {
-            false
+            None
         }
     }
 
-    pub fn train(&mut self, rng: &mut dyn RngCore) { // "ускорить" симуляцию до конца данного поколения
+    pub fn train(&mut self, rng: &mut dyn RngCore) -> ga::Statistics { // "ускорить" симуляцию до конца данного поколения
         loop {
-            if self.step(rng) {
-                return;
+            if let Some(summary) = self.step(rng) {
+                return summary;
             }
         }
     }
@@ -109,7 +108,7 @@ impl Simulation {
         }
     }
 
-    fn evolve(&mut self, rng: &mut dyn RngCore) {
+    fn evolve(&mut self, rng: &mut dyn RngCore) -> ga::Statistics {
         self.age = 0;
 
         let current_population: Vec<_> = self // подготовить птиц к генетическому алгоритму
@@ -118,7 +117,7 @@ impl Simulation {
         .iter()
         .map(AnimalIndividual::from_animal)
         .collect(); 
-        let evolved_population = self.ga.evolve(rng, &current_population); // развить птиц
+        let (evolved_population, stats) = self.ga.evolve(rng, &current_population); // развить птиц
         self.world.animals = evolved_population // вернуть птиц после генетического алгоритма
         .into_iter()
         .map(|individual| individual.into_animal(rng))
@@ -127,5 +126,7 @@ impl Simulation {
         for food in &mut self.world.foods { // перезагрузить пищу
             food.position = rng.gen();
         }
+
+        stats
     }
 }
