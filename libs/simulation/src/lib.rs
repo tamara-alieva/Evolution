@@ -3,8 +3,9 @@ mod animal_individual;
 mod eye;
 mod food;
 mod world;
+mod brain;
 
-pub use self::{animal::*, eye::*, food::*, world::*};
+pub use self::{animal::*, brain::*, eye::*, food::*, world::*};
 use std::f32::consts::FRAC_PI_2;
 const SPEED_MIN: f32 = 0.001;
 const SPEED_MAX: f32 = 0.005;
@@ -89,7 +90,7 @@ impl Simulation {
                 &self.world.foods,
             );
 
-            let response = animal.brain.propagate(vision);
+            let response = animal.brain.nn.propagate(vision);
             let speed = response[0].clamp(-SPEED_ACCEL, SPEED_ACCEL);
             let rotation = response[1].clamp(-ROTATION_ACCEL, ROTATION_ACCEL);
             animal.speed = (animal.speed + speed).clamp(SPEED_MIN, SPEED_MAX);
