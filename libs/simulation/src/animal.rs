@@ -6,7 +6,7 @@ pub struct Animal { // Животное
     pub(crate) rotation: na::Rotation2<f32>,   // вращение
     pub(crate) speed: f32,                     // скорость
     pub(crate) eye: Eye,                       // глаз
-    pub(crate) brain: Brain,             // мозг (нейронная сеть)
+    pub(crate) brain: Brain,                   // мозг (нейронная сеть)
     pub(crate) satiation: usize,               // количество съеденной пищи
 }
 
@@ -15,7 +15,17 @@ impl Animal {
         let eye = Eye::default();
         let brain = Brain::random(rng, &eye);
 
-        Self::new(eye, brain, rng);
+        Self::new(eye, brain, rng)
+    }
+
+    pub(crate) fn from_chromosome(
+        chromosome: ga::Chromosome,
+        rng: &mut dyn RngCore,
+    ) -> Self {
+        let eye = Eye::default();
+        let brain = Brain::from_chromosome(chromosome, &eye);
+
+        Self::new(eye, brain, rng)
     }
 
     pub(crate) fn as_chromosome(&self) -> ga::Chromosome {
