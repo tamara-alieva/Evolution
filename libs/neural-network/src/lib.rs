@@ -103,6 +103,8 @@ impl Neuron {
 // Тесты
 #[cfg(test)]
 mod tests {
+    use std::arch::is_aarch64_feature_detected;
+
     use super::*;
     use approx::{assert_relative_eq, assert_relative_ne};
     use rand::SeedableRng;
@@ -223,5 +225,29 @@ mod tests {
 
         assert_relative_eq!(actual.as_slice(), expected.as_slice());
 
+    }
+
+    fn weights() {
+        let network = Network {
+            layers: vec![
+                Layer {
+                    neurons: vec![Neuron {
+                        bias: 0.1,
+                        weights: vec![0.2, 0.3, 0.4],
+                    }],
+                },
+                Layer {
+                    neurons: vec![Neuron {
+                        bias: 0.5,
+                        weights: vec![0.6, 0.7, 0.8],
+                    }],
+                },
+            ],
+        };
+
+        let actual = network.weights();
+        let expected = vec![0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8];
+
+        assert_relative_eq!(actual.as_slice(), expected.as_slice());
     }
 }
