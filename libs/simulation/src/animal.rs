@@ -7,6 +7,7 @@ pub struct Animal { // Животное
     pub(crate) speed: f32,                     // скорость
     pub(crate) eye: Eye,                       // глаз
     pub(crate) brain: nn::Network,             // мозг (нейронная сеть)
+    pub(crate) satiation: usize,               // количество съеденной пищи
 }
 
 impl Animal {
@@ -33,6 +34,7 @@ impl Animal {
             speed: 0.002,
             eye,
             brain,
+            satiation: 0,
         }
     }
 

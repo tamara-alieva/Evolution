@@ -31,6 +31,10 @@ impl Network {  // Нейронная сеть
             .iter()
             .fold(inputs, |inputs, layer| layer.propagate(inputs))
     }
+
+    pub fn weights(&self) -> Vec<f32> {
+        todo!()
+    }
 }
 
 #[derive(Clone, Debug)]

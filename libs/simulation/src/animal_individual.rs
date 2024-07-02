@@ -24,7 +24,10 @@ impl ga::Individual for AnimalIndividual {
 
 impl AnimalIndividual {
     pub fn from_animal(animal: &Animal) -> Self {
-        todo!()
+        Self {
+            fitness: animal.satiation as f32,
+            chromosome: todo!(),
+        }
     }
 
     pub fn into_animal(self, rng: &mut dyn RngCore) -> Animal {
