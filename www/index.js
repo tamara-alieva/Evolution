@@ -1,16 +1,39 @@
 import * as sim from "lib-simulation-wasm";
+import { Terminal } from "./app/terminal";
+import { Viewport } from "./app/viewport";
+/*
+const terminal = new Terminal(
+    document.getElementById("terminal-stdin"),
+    document.getElementById("terminal-stdout"),
+);
 
-const simulation = new sim.Simulation();
+const viewport = new Viewport(
+    document.getElementById("viewport"),
+);
+
+let simulation = new sim.Simulation(sim.Simulation.default_config()); // активная симуляция
+
+let active = true; // симуляция активна или на паузе
+
+const config = simulation.config();
+
+terminal.println("Simulation of evolution, powered by neural network, genetic algorithm and high school math.");
+
+
+
+
+*/
+
+
+
+
+
+
+/*
 
 document.getElementById('train').onclick = function() {
-    simulation.train();
+    console.log(simulation.train());
 }
-
-const viewport = document.getElementById('viewport');
-const viewportWidth = viewport.width;
-const viewportHeight = viewport.height;
-
-const ctxt = viewport.getContext('2d');
 
 // отрисовка треугольника
 CanvasRenderingContext2D.prototype.drawTriangle =
@@ -78,4 +101,4 @@ function redraw() {
     requestAnimationFrame(redraw); // зацикливание симуляции
 }
 
-redraw();
+redraw(); */
