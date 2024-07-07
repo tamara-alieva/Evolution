@@ -1,8 +1,14 @@
 use crate::*;
 
 #[derive(Debug)]
-pub struct Food { // Еда
-    pub(crate) position: na::Point2<f32>,      // позиция
+pub struct Food {
+    pub(crate) position: na::Point2<f32>,
+}
+
+impl Food {
+    pub fn position(&self) -> na::Point2<f32> {
+        self.position
+    }
 }
 
 impl Food {
@@ -10,9 +16,5 @@ impl Food {
         Self {
             position: rng.gen(),
         }
-    }
-
-    pub fn position(&self) -> na::Point2<f32> {
-        self.position
     }
 }

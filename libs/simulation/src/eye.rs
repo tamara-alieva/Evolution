@@ -1,5 +1,5 @@
+
 use crate::*;
-use std::{f32::consts::*, sync::PoisonError};
 
 #[derive(Debug)]
 pub struct Eye {
@@ -62,12 +62,18 @@ impl Eye {
     }
 }
 
-//-----------------------------------------------------------------
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use test_case::test_case;
+
+    const TEST_EYE_CELLS: usize = 13;
+
+    fn food(x: f32, y: f32) -> Food {
+        Food {
+            position: na::Point2::new(x, y),
+        }
+    }
 
     struct TestCase {
         foods: Vec<Food>,
@@ -78,8 +84,6 @@ mod tests {
         rot: f32,
         expected: &'static str,
     }
-
-    const TEST_EYE_CELLS: usize = 13;
 
     impl TestCase {
         fn run(self) {
@@ -92,47 +96,36 @@ mod tests {
             );
 
             let actual = actual
-            .into_iter()
-            .map(|cell| {
-                if cell >= 0.7 {
-                    // <0.7, 1.0> - пища прямо перед птицей
-                    "#"
-                } else if cell >= 0.3 {
-                    // <0.3, 0.7) - пища чуть дальше
-                    "+"
-                } else if cell > 0.0 {
-                    // <0.0, 0.3) - пища довольно далеко
-                    "."
-                } else {
-                    // 0.0 - фоторецептор "не видит" пищу
-                    " "
-                }
-            })
-            .collect::<Vec<_>>()
-            .join("");
+                .into_iter()
+                .map(|cell| {
+                    if cell >= 0.7 {
+                        "#"
+                    } else if cell >= 0.3 {
+                        "+"
+                    } else if cell > 0.0 {
+                        "."
+                    } else {
+                        " "
+                    }
+                })
+                .collect::<Vec<_>>()
+                .join("");
 
             assert_eq!(actual, self.expected);
         }
     }
 
-    fn food(x: f32, y: f32) -> Food {
-        Food {
-            position: na::Point2::new(x, y),
-        }
-    }
-
-    // тестирования удаления пищи от птицы на расстояние
-    #[test_case(1.0, "      +      ")] // пища в поле зрения
+    #[test_case(1.0, "      +      ")]
     #[test_case(0.9, "      +      ")]
     #[test_case(0.8, "      +      ")]
-    #[test_case(0.7, "      .      ")] 
+    #[test_case(0.7, "      .      ")]
     #[test_case(0.6, "      .      ")]
-    #[test_case(0.5, "             ")] // пища исчезает из поля зрения
+    #[test_case(0.5, "             ")]
     #[test_case(0.4, "             ")]
     #[test_case(0.3, "             ")]
     #[test_case(0.2, "             ")]
-    #[test_case(0.1, "             ")]    
-    fn fov_ranges(fov_range: f32, expected: &'static str) {
+    #[test_case(0.1, "             ")]
+    fn different_fov_ranges(fov_range: f32, expected: &'static str) {
         TestCase {
             foods: vec![food(0.5, 1.0)],
             fov_angle: FRAC_PI_2,
@@ -141,69 +134,10 @@ mod tests {
             rot: 0.0,
             fov_range,
             expected,
-        }.run()
+        }
+        .run()
     }
 
-    // тестирование вращения
-    #[test_case(0.00 * PI, "         +   ")] // пища правее
-    #[test_case(0.25 * PI, "        +    ")]
-    #[test_case(0.50 * PI, "      +      ")] // пища перед птицей
-    #[test_case(0.75 * PI, "    +        ")]
-    #[test_case(1.00 * PI, "   +         ")] // пища левее
-    #[test_case(1.25 * PI, " +           ")]
-    #[test_case(1.50 * PI, "            +")] // пища позади птицы (птица видит её, т.к. fov_angle = 360 гр.)
-    #[test_case(1.75 * PI, "           + ")]
-    #[test_case(2.00 * PI, "         +   ")]
-    #[test_case(2.25 * PI, "        +    ")]
-    #[test_case(2.50 * PI, "      +      ")]
-    fn rotations(rot: f32, expected: &'static str) {
-        TestCase {
-            foods: vec![food(0.0, 0.5)],
-            fov_range: 1.0,
-            fov_angle: 2.0 * PI,
-            x: 0.5,
-            y: 0.5,
-            rot,
-            expected,
-        }.run()
-    }
-
-    // тестирование позиции
-    // по оси X
-    #[test_case(0.9, 0.5, "#           #")]
-    #[test_case(0.8, 0.5, "  #       #  ")]
-    #[test_case(0.7, 0.5, "   +     +   ")]
-    #[test_case(0.6, 0.5, "    +   +    ")]
-    #[test_case(0.5, 0.5, "    +   +    ")]
-    #[test_case(0.4, 0.5, "     + +     ")]
-    #[test_case(0.3, 0.5, "     . .     ")]
-    #[test_case(0.2, 0.5, "     . .     ")]
-    #[test_case(0.1, 0.5, "     . .     ")]
-    #[test_case(0.0, 0.5, "             ")]
-    // по оси Y
-    #[test_case(0.5, 0.0, "            +")]
-    #[test_case(0.5, 0.1, "          + .")]
-    #[test_case(0.5, 0.2, "         +  +")]
-    #[test_case(0.5, 0.3, "        + +  ")]
-    #[test_case(0.5, 0.4, "      +  +   ")]
-    #[test_case(0.5, 0.6, "   +  +      ")]
-    #[test_case(0.5, 0.7, "  + +        ")]
-    #[test_case(0.5, 0.8, "+  +         ")]
-    #[test_case(0.5, 0.9, ". +          ")]
-    #[test_case(0.5, 1.0, "+            ")]
-    fn positions(x: f32, y: f32, expected: &'static str) {
-        TestCase {
-            foods: vec![food(1.0, 0.4), food(1.0, 0.6)],
-            fov_range: 1.0,
-            fov_angle: FRAC_PI_2,
-            rot: 3.0 * FRAC_PI_2,
-            x,
-            y,
-            expected,
-        }.run()
-    }
-
-    // тестирование угла обзора
     #[test_case(0.25 * PI, " +         + ")]
     #[test_case(0.50 * PI, ".  +     +  .")]
     #[test_case(0.75 * PI, "  . +   + .  ")]
@@ -212,7 +146,7 @@ mod tests {
     #[test_case(1.50 * PI, ".   .+ +.   .")]
     #[test_case(1.75 * PI, ".   .+ +.   .")]
     #[test_case(2.00 * PI, "+.  .+ +.  .+")]
-    fn fov_angles(fov_angle: f32, expected: &'static str) {
+    fn different_fov_angles(fov_angle: f32, expected: &'static str) {
         TestCase {
             foods: vec![
                 food(0.0, 0.0),
@@ -230,7 +164,67 @@ mod tests {
             rot: 3.0 * FRAC_PI_2,
             fov_angle,
             expected,
-        }.run()
+        }
+        .run()
     }
 
+    // Checking the X axis:
+    #[test_case(0.9, 0.5, "#           #")]
+    #[test_case(0.8, 0.5, "  #       #  ")]
+    #[test_case(0.7, 0.5, "   +     +   ")]
+    #[test_case(0.6, 0.5, "    +   +    ")]
+    #[test_case(0.5, 0.5, "    +   +    ")]
+    #[test_case(0.4, 0.5, "     + +     ")]
+    #[test_case(0.3, 0.5, "     . .     ")]
+    #[test_case(0.2, 0.5, "     . .     ")]
+    #[test_case(0.1, 0.5, "     . .     ")]
+    #[test_case(0.0, 0.5, "             ")]
+    //
+    // Checking the Y axis:
+    #[test_case(0.5, 0.0, "            +")]
+    #[test_case(0.5, 0.1, "          + .")]
+    #[test_case(0.5, 0.2, "         +  +")]
+    #[test_case(0.5, 0.3, "        + +  ")]
+    #[test_case(0.5, 0.4, "      +  +   ")]
+    #[test_case(0.5, 0.6, "   +  +      ")]
+    #[test_case(0.5, 0.7, "  + +        ")]
+    #[test_case(0.5, 0.8, "+  +         ")]
+    #[test_case(0.5, 0.9, ". +          ")]
+    #[test_case(0.5, 1.0, "+            ")]
+    fn different_positions(x: f32, y: f32, expected: &'static str) {
+        TestCase {
+            foods: vec![food(1.0, 0.4), food(1.0, 0.6)],
+            fov_range: 1.0,
+            fov_angle: FRAC_PI_2,
+            rot: 3.0 * FRAC_PI_2,
+            x,
+            y,
+            expected,
+        }
+        .run()
+    }
+
+    #[test_case(0.00 * PI, "         +   ")]
+    #[test_case(0.25 * PI, "        +    ")]
+    #[test_case(0.50 * PI, "      +      ")]
+    #[test_case(0.75 * PI, "    +        ")]
+    #[test_case(1.00 * PI, "   +         ")]
+    #[test_case(1.25 * PI, " +           ")]
+    #[test_case(1.50 * PI, "            +")]
+    #[test_case(1.75 * PI, "           + ")]
+    #[test_case(2.00 * PI, "         +   ")]
+    #[test_case(2.25 * PI, "        +    ")]
+    #[test_case(2.50 * PI, "      +      ")]
+    fn different_rotations(rot: f32, expected: &'static str) {
+        TestCase {
+            foods: vec![food(0.0, 0.5)],
+            fov_range: 1.0,
+            fov_angle: 2.0 * PI,
+            x: 0.5,
+            y: 0.5,
+            rot,
+            expected,
+        }
+        .run()
+    }
 }

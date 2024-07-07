@@ -1,18 +1,32 @@
 use crate::*;
 
 #[derive(Debug)]
-pub struct Animal { // Животное
-    pub(crate) position: na::Point2<f32>,      // позиция
-    pub(crate) rotation: na::Rotation2<f32>,   // вращение
-    pub(crate) vision: Vec<f32>,               // зрение
-    pub(crate) speed: f32,                     // скорость
-    pub(crate) eye: Eye,                       // глаз
-    pub(crate) brain: Brain,                   // мозг (нейронная сеть)
-    pub(crate) satiation: usize,               // количество съеденной пищи
+pub struct Animal {
+    pub(crate) position: na::Point2<f32>,
+    pub(crate) rotation: na::Rotation2<f32>,
+    pub(crate) vision: Vec<f32>,
+    pub(crate) speed: f32,
+    pub(crate) eye: Eye,
+    pub(crate) brain: Brain,
+    pub(crate) satiation: usize,
 }
 
 impl Animal {
-    pub fn random(config: &Config, rng: &mut dyn RngCore) -> Self {
+    pub fn position(&self) -> na::Point2<f32> {
+        self.position
+    }
+
+    pub fn rotation(&self) -> na::Rotation2<f32> {
+        self.rotation
+    }
+
+    pub fn vision(&self) -> &[f32] {
+        &self.vision
+    }
+}
+
+impl Animal {
+    pub(crate) fn random(config: &Config, rng: &mut dyn RngCore) -> Self {
         let brain = Brain::random(config, rng);
 
         Self::new(config, rng, brain)
@@ -46,19 +60,9 @@ impl Animal {
         self.position.x = na::wrap(self.position.x, 0.0, 1.0);
         self.position.y = na::wrap(self.position.y, 0.0, 1.0);
     }
+}
 
-    pub fn position(&self) -> na::Point2<f32> {
-        self.position
-    }
-
-    pub fn rotation(&self) -> na::Rotation2<f32> {
-        self.rotation
-    }
-
-    pub fn vision(&self) -> &[f32] {
-        &self.vision
-    }
-
+impl Animal {
     fn new(config: &Config, rng: &mut dyn RngCore, brain: Brain) -> Self {
         Self {
             position: rng.gen(),
