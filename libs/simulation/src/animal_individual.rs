@@ -1,8 +1,8 @@
 use crate::*;
 
 pub struct AnimalIndividual {
-    fitness: f32,
-    chromosome: ga::Chromosome,
+    pub(crate) fitness: f32,
+    pub(crate) chromosome: ga::Chromosome,
 }
 
 impl ga::Individual for AnimalIndividual {
@@ -30,7 +30,7 @@ impl AnimalIndividual {
         }
     }
 
-    pub fn into_animal(self, rng: &mut dyn RngCore) -> Animal {
-        Animal::from_chromosome(self.chromosome, rng)
+    pub fn into_animal(self, config: &Config, rng: &mut dyn RngCore) -> Animal {
+        Animal::from_chromosome(config, rng, self.chromosome)
     }
 }
