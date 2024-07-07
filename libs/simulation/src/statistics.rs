@@ -9,10 +9,10 @@ pub struct Statistics {
 
 impl fmt::Display for Statistics {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "generation {}:", self.generation)?;
+        writeln!(f, "Поколение {}:", self.generation)?;
         write!(
             f,
-            "min[{:.2}] max[{:.2}] avg[{:.2}] median[{:.2}]",
+            "мин[{:.2}] макс[{:.2}] сред.[{:.2}] медиан.[{:.2}]",
             self.ga.min_fitness(),
             self.ga.max_fitness(),
             self.ga.avg_fitness(),

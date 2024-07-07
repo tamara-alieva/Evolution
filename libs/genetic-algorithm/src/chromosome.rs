@@ -50,7 +50,6 @@ impl PartialEq for Chromosome {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;

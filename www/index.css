@@ -17,7 +17,7 @@ body {
     justify-content: center;
     margin: 0;
     padding: 0;
-    background: #a8d0e6;
+    background: #A8D0E6;
 }
 
 #container {
@@ -31,9 +31,8 @@ body {
 
 #terminal-stdout, #terminal-stdin {
     padding: 1em;
-    background: #a8d0e6;
-    color: #24305E;
-    border: 1px solid #24305E;
+    background: #24305E;
+    color: #b6d0dd;
     outline: none;
     font-family: monospace;
 }

@@ -1,4 +1,3 @@
-
 use crate::{OptConfig, OptContext, OptLog, OptStatistics};
 use itertools::iproduct;
 use lib_simulation::{Config, Simulation};

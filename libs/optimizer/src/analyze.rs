@@ -1,4 +1,3 @@
-
 use crate::{OptLog, OptStatistics};
 use std::collections::{btree_map, BTreeMap};
 use std::fs::File;

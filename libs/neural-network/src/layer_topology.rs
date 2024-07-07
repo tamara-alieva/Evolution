@@ -1,4 +1,4 @@
 #[derive(Clone, Copy, Debug)]
-pub struct LayerTopology { // Топология слоёв
+pub struct LayerTopology {
     pub neurons: usize,
 }

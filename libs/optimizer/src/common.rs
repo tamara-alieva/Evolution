@@ -1,4 +1,3 @@
-
 use ordered_float::OrderedFloat;
 use serde::{Deserialize, Serialize};
 

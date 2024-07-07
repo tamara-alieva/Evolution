@@ -1,4 +1,3 @@
-
 mod chromosome;
 mod crossover;
 mod individual;
